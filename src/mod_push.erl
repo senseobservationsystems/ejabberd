@@ -44,7 +44,7 @@
 -export([get_commands_spec/0, delete_old_sessions/1]).
 
 %% API (used by mod_push_keepalive).
--export([notify/1, notify/3, notify/5]).
+-export([notify/1, notify/3, notify/4, notify/5]).
 
 %% For IQ callbacks
 -export([delete_session/3]).
@@ -53,6 +53,7 @@
 -include("ejabberd_commands.hrl").
 -include("logger.hrl").
 -include("xmpp.hrl").
+-include("epushmsg.hrl").
 
 -define(PUSH_CACHE, push_cache).
 
@@ -127,6 +128,10 @@ depends(_Host, _Opts) ->
 -spec mod_opt_type(atom()) -> fun((term()) -> term()) | [atom()].
 mod_opt_type(db_type) ->
     fun(T) -> ejabberd_config:v_db(?MODULE, T) end;
+mod_opt_type(access_key) ->
+    fun(AccessKey) -> AccessKey end;
+mod_opt_type(access_secret) ->
+    fun(AccessSecret) -> AccessSecret end;
 mod_opt_type(O) when O == cache_life_time; O == cache_size ->
     fun(I) when is_integer(I), I > 0 -> I;
        (infinity) -> infinity
@@ -136,6 +141,8 @@ mod_opt_type(O) when O == use_cache; O == cache_missed ->
 
 mod_options(Host) ->
     [{db_type, ejabberd_config:default_db(Host, ?MODULE)},
+     {access_key, <<"">>},
+     {access_secret, <<"">>},
      {use_cache, ejabberd_config:use_cache(Host)},
      {cache_size, ejabberd_config:cache_size(Host)},
      {cache_missed, ejabberd_config:cache_missed(Host)},
@@ -365,7 +372,7 @@ offline_message(#message{to = #jid{luser = LUser, lserver = LServer}} = Pkt) ->
     case lookup_sessions(LUser, LServer) of
 	{ok, [_|_] = Clients} ->
 	    ?DEBUG("Notifying ~s@~s of offline message", [LUser, LServer]),
-	    notify(LUser, LServer, Clients);
+	    notify(LUser, LServer, Clients, Pkt);
 	_ ->
 	    ok
     end,
@@ -430,6 +437,36 @@ notify(LUser, LServer, Clients) ->
 				       ok % Hmm.
 			       end,
 	      notify(LServer, PushLJID, Node, XData, HandleResponse)
+      end, Clients).
+
+-spec notify(binary(), binary(), [push_session()], message()) -> ok.
+notify(LUser, LServer, Clients, #message{to = #jid{luser = ToUser, lserver = ToServer}, from = #jid{luser = FromUser, lserver = FromServer}, body = [#text{data = BodyData}]} = Pkt) ->
+    lists:foreach(
+      fun({TS, PushLJID, Node, XData}) ->
+              [Host] = ?MYHOSTS,
+              AccessKey = gen_mod:get_module_opt(Host, ?MODULE, access_key),
+              AccessSecret = gen_mod:get_module_opt(Host, ?MODULE, access_secret),
+              PushMsgParams = epushmsg:new_params(AccessSecret, AccessKey),
+              case XData of
+                  #xdata{fields = XDataFields} ->
+                      lists:map(fun(XDataField) ->
+                                        case XDataField of
+                                            #xdata_field{var = <<"secret">>, values = [Secret]} ->
+                                                Audience = epushmsg:new_androidChannel(Secret),
+                                                Alert = epushmsg:new_alert(<<"New Chat Message">>),
+                                                Payload = epushmsg:new_payload(Audience, Alert, android),
+
+                                                PushMsgParams2 = PushMsgParams#pushmsg_params{payload=Payload},
+                                                StatusCode = epushmsg:push(PushMsgParams2),
+                                                ok;
+                                            _ ->
+                                                ok
+                                        end
+                                end, XDataFields);
+                  _ ->
+                      ?DEBUG("No XData", []),
+                      ok
+              end
       end, Clients).
 
 -spec notify(binary(), ljid(), binary(), xdata(),
