@@ -449,20 +449,22 @@ notify(LUser, LServer, Clients, #message{to = #jid{luser = ToUser, lserver = ToS
               PushMsgParams = epushmsg:new_params(AccessSecret, AccessKey),
               case XData of
                   #xdata{fields = XDataFields} ->
-                      lists:map(fun(XDataField) ->
-                                        case XDataField of
-                                            #xdata_field{var = <<"secret">>, values = [Secret]} ->
-                                                Audience = epushmsg:new_androidChannel(Secret),
-                                                Alert = epushmsg:new_alert(<<"New Chat Message">>),
-                                                Payload = epushmsg:new_payload(Audience, Alert, android),
+                      lists:foreach(
+                        fun(XDataField) ->
+                                case XDataField of
+                                    #xdata_field{var = <<"secret">>, values = [Secret]} ->
+                                        Audience = epushmsg:new_namedUser(Secret),
+                                        Alert = epushmsg:new_alert(<<"New Message">>),
+                                        Payload = epushmsg:new_payload(Audience, Alert, all),
 
-                                                PushMsgParams2 = PushMsgParams#pushmsg_params{payload=Payload},
-                                                StatusCode = epushmsg:push(PushMsgParams2),
-                                                ok;
-                                            _ ->
-                                                ok
-                                        end
-                                end, XDataFields);
+                                        PushMsgParams2 = PushMsgParams#pushmsg_params{payload=Payload},
+                                        StatusCode = epushmsg:push(PushMsgParams2),
+                                        ok;
+                                    _ ->
+                                        ok
+                                end
+                        end, XDataFields),
+                      ok;
                   _ ->
                       ?DEBUG("No XData", []),
                       ok
