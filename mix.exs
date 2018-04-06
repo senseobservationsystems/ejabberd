@@ -29,7 +29,7 @@ defmodule Ejabberd.Mixfile do
      included_applications: [:lager, :mnesia, :inets, :p1_utils, :cache_tab,
                              :fast_tls, :stringprep, :fast_xml, :xmpp,
                              :stun, :fast_yaml, :esip, :jiffy, :p1_oauth2,
-                             :eimp, :base64url, :jose]
+                             :eimp, :base64url, :jose, :hackney]
                          ++ cond_apps()]
   end
 
@@ -44,7 +44,7 @@ defmodule Ejabberd.Mixfile do
 
   defp erlc_options do
     # Use our own includes + includes from all dependencies
-    includes = ["include"] ++ deps_include(["fast_xml", "xmpp", "p1_utils"])
+    includes = ["include"] ++ deps_include(["fast_xml", "xmpp", "p1_utils", "epushmsg"])
     [:debug_info, {:d, :ELIXIR_ENABLED}] ++ cond_options() ++ Enum.map(includes, fn(path) -> {:i, path} end) ++
     if_function_exported(:crypto, :strong_rand_bytes, 1, [{:d, :STRONG_RAND_BYTES}]) ++
     if_function_exported(:rand, :uniform, 1, [{:d, :RAND_UNIFORM}]) ++
@@ -70,13 +70,14 @@ defmodule Ejabberd.Mixfile do
      {:esip, "~> 1.0"},
      {:p1_mysql, "~> 1.0"},
      {:p1_pgsql, "~> 1.1"},
-     {:jiffy, "~> 0.14.7"},
+     {:jiffy, "~> 0.14.8", override: true},
      {:p1_oauth2, "~> 0.6.1"},
      {:distillery, "~> 1.0"},
      {:ex_doc, ">= 0.0.0", only: :dev},
      {:eimp, "~> 1.0"},
      {:base64url, "~> 0.0.1"},
-     {:jose, "~> 1.8"}]
+     {:jose, "~> 1.8"},
+     {:epushmsg, github: "senseobservationsystems/epushmsg", tag: "v0.0.2"}]
     ++ cond_deps()
   end
 
