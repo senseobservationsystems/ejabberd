@@ -459,7 +459,13 @@ notify(LUser, LServer, Clients, #message{to = #jid{luser = ToUser, lserver = ToS
 
                                         PushMsgParams2 = PushMsgParams#pushmsg_params{payload=Payload},
                                         StatusCode = epushmsg:push(PushMsgParams2),
-                                        ok;
+                                        if 
+                                            StatusCode == 202 ->
+                                                ok;
+                                            true ->
+                                                ?ERROR_MSG("Error sending push notification. Status Code: ~p", [StatusCode]),
+                                                ok
+                                        end;
                                     _ ->
                                         ok
                                 end

@@ -3,7 +3,7 @@
   "distillery": {:hex, :distillery, "1.5.2", "eec18b2d37b55b0bcb670cf2bcf64228ed38ce8b046bb30a9b636a6f5a4c0080", [:mix], [], "hexpm"},
   "earmark": {:hex, :earmark, "1.2.4", "99b637c62a4d65a20a9fb674b8cffb8baa771c04605a80c911c4418c69b75439", [:mix], [], "hexpm"},
   "eimp": {:hex, :eimp, "1.0.3", "e40108d622d672cf6003d279d98fc46a98df182dbe8756857896ffd28883090d", [:rebar3], [{:p1_utils, "1.0.11", [hex: :p1_utils, repo: "hexpm", optional: false]}], "hexpm"},
-  "epushmsg": {:git, "https://github.com/senseobservationsystems/epushmsg.git", "71089e81dd5ec4f314ed77543d673972977528e0", [tag: "v0.0.2"]},
+  "epushmsg": {:git, "https://github.com/senseobservationsystems/epushmsg.git", "94cf1182b32360ef08337faed1c2c9e5baabc677", [tag: "v0.0.2"]},
   "esip": {:hex, :esip, "1.0.22", "3e387312614762fb84d3f77ba4f17650faf52510482521300b3d98ecdcbec21d", [:rebar3], [{:fast_tls, "1.0.21", [hex: :fast_tls, repo: "hexpm", optional: false]}, {:p1_utils, "1.0.11", [hex: :p1_utils, repo: "hexpm", optional: false]}, {:stun, "1.0.21", [hex: :stun, repo: "hexpm", optional: false]}], "hexpm"},
   "ex_doc": {:hex, :ex_doc, "0.18.3", "f4b0e4a2ec6f333dccf761838a4b253d75e11f714b85ae271c9ae361367897b7", [:mix], [{:earmark, "~> 1.1", [hex: :earmark, repo: "hexpm", optional: false]}], "hexpm"},
   "ezlib": {:hex, :ezlib, "1.0.4", "2434e4bb549cb060d5ac02261ba48fbe1a69b2ae4e1bf7485a3b27b3f3ec618d", [:rebar3], [], "hexpm"},
