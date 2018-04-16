@@ -354,7 +354,7 @@ mam_message(#message{} = Pkt, LUser, LServer, _Peer, chat, _Dir) ->
 	    case drop_online_sessions(LUser, LServer, Clients) of
 		[_|_] = Clients1 ->
 		    ?DEBUG("Notifying ~s@~s of MAM message", [LUser, LServer]),
-		    notify(LUser, LServer, Clients1);
+		    notify(LUser, LServer, Clients1, Pkt);
 		[] ->
 		    ok
 	    end;
