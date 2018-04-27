@@ -456,7 +456,7 @@ notify(LUser, LServer, Clients, #message{to = #jid{luser = ToUser, lserver = ToS
                                         case XDataField of
                                             #xdata_field{var = <<"secret">>, values = [Secret]} ->
                                                 Audience = epushmsg:new_namedUser(Secret),
-                                                Alert = epushmsg:new_alert(<<"New Message">>),
+                                                Alert = epushmsg:new_alert(BodyData),
                                                 Payload = epushmsg:new_payload(Audience, Alert, [android,ios]),
 
                                                 PushMsgParams2 = PushMsgParams#pushmsg_params{payload=Payload},
