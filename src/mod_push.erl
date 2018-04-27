@@ -441,41 +441,46 @@ notify(LUser, LServer, Clients) ->
 
 -spec notify(binary(), binary(), [push_session()], message()) -> ok.
 notify(LUser, LServer, Clients, #message{to = #jid{luser = ToUser, lserver = ToServer}, from = #jid{luser = FromUser, lserver = FromServer}, body = [#text{data = BodyData}]} = Pkt) ->
-    lists:foreach(
-      fun({TS, PushLJID, Node, XData}) ->
-              [Host] = ?MYHOSTS,
-              AccessKey = gen_mod:get_module_opt(Host, ?MODULE, access_key),
-              AccessSecret = gen_mod:get_module_opt(Host, ?MODULE, access_secret),
-              PushMsgParams = epushmsg:new_params(AccessSecret, AccessKey),
-              case XData of
-                  #xdata{fields = XDataFields} ->
-                      lists:foreach(
-                        fun(XDataField) ->
-                                case XDataField of
-                                    #xdata_field{var = <<"secret">>, values = [Secret]} ->
-                                        Audience = epushmsg:new_namedUser(Secret),
-                                        Alert = epushmsg:new_alert(<<"New Message">>),
-                                        Payload = epushmsg:new_payload(Audience, Alert, [android,ios]),
+    case binary:match(BodyData, [<<"chat_marker_deliverd_prefix">>, <<"chat_marker_read_prefix">>, <<"chat_signal_prefix">>]) of
+        nomatch ->
+            lists:foreach(
+              fun({TS, PushLJID, Node, XData}) ->
+                      [Host] = ?MYHOSTS,
+                      AccessKey = gen_mod:get_module_opt(Host, ?MODULE, access_key),
+                      AccessSecret = gen_mod:get_module_opt(Host, ?MODULE, access_secret),
+                      PushMsgParams = epushmsg:new_params(AccessSecret, AccessKey),
+                      case XData of
+                          #xdata{fields = XDataFields} ->
+                              lists:foreach(
+                                fun(XDataField) ->
+                                        case XDataField of
+                                            #xdata_field{var = <<"secret">>, values = [Secret]} ->
+                                                Audience = epushmsg:new_namedUser(Secret),
+                                                Alert = epushmsg:new_alert(<<"New Message">>),
+                                                Payload = epushmsg:new_payload(Audience, Alert, [android,ios]),
 
-                                        PushMsgParams2 = PushMsgParams#pushmsg_params{payload=Payload},
-                                        StatusCode = epushmsg:push(PushMsgParams2),
-                                        if 
-                                            StatusCode == 202 ->
-                                                ok;
-                                            true ->
-                                                ?ERROR_MSG("Error sending push notification. Status Code: ~p", [StatusCode]),
+                                                PushMsgParams2 = PushMsgParams#pushmsg_params{payload=Payload},
+                                                StatusCode = epushmsg:push(PushMsgParams2),
+                                                if
+                                                    StatusCode == 202 ->
+                                                        ok;
+                                                    true ->
+                                                        ?ERROR_MSG("Error sending push notification. Status Code: ~p", [StatusCode]),
+                                                        ok
+                                                end;
+                                            _ ->
                                                 ok
-                                        end;
-                                    _ ->
-                                        ok
-                                end
-                        end, XDataFields),
-                      ok;
-                  _ ->
-                      ?DEBUG("No XData", []),
-                      ok
-              end
-      end, Clients).
+                                        end
+                                end, XDataFields),
+                              ok;
+                          _ ->
+                              ?DEBUG("No XData", []),
+                              ok
+                      end
+              end, Clients);
+        _ ->
+            ok
+    end.
 
 -spec notify(binary(), ljid(), binary(), xdata(),
 	     fun((iq() | timeout) -> any())) -> ok.
