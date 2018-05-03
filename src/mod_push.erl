@@ -455,9 +455,12 @@ notify(LUser, LServer, Clients, #message{to = #jid{luser = ToUser, lserver = ToS
                                 fun(XDataField) ->
                                         case XDataField of
                                             #xdata_field{var = <<"secret">>, values = [Secret]} ->
-                                                Audience = epushmsg:new_namedUser(Secret),
-                                                Alert = epushmsg:new_alert(BodyData),
-                                                Payload = epushmsg:new_payload(Audience, Alert, [android,ios]),
+                                                ChatRoomPrefix = <<"nice-day://chatRoom/">>,
+                                                Payload = {[{audience, {[{named_user, Secret}]}},
+                                                            {notification, {[{alert, BodyData},
+                                                                             {actions, {[{open, {[{type, deep_link},
+                                                                                                  {content, <<ChatRoomPrefix/binary, FromUser/binary>>}]}}]}}]}},
+                                                            {device_types, [android, ios]}]},
 
                                                 PushMsgParams2 = PushMsgParams#pushmsg_params{payload=Payload},
                                                 StatusCode = epushmsg:push(PushMsgParams2),
