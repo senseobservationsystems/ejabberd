@@ -77,7 +77,7 @@ defmodule Ejabberd.Mixfile do
      {:eimp, "~> 1.0"},
      {:base64url, "~> 0.0.1"},
      {:jose, "~> 1.8"},
-     {:epushmsg, github: "senseobservationsystems/epushmsg", tag: "v0.0.2"}]
+     {:epushmsg, github: "senseobservationsystems/epushmsg", tag: "v0.0.3"}]
     ++ cond_deps()
   end
 
