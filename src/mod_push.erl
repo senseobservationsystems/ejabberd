@@ -455,7 +455,7 @@ notify(LUser, LServer, Clients, #message{to = #jid{luser = ToUser, lserver = ToS
                                 fun(XDataField) ->
                                         case XDataField of
                                             #xdata_field{var = <<"secret">>, values = [Secret]} ->
-                                                ChatRoomPrefix = <<"nice-day://chatRoom/">>,
+                                                ChatRoomPrefix = <<"nice-day://chat_room/">>,
                                                 Payload = {[{audience, {[{named_user, Secret}]}},
                                                             {notification, {[{alert, BodyData},
                                                                              {actions, {[{open, {[{type, deep_link},
