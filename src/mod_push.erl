@@ -441,6 +441,7 @@ notify(LUser, LServer, Clients) ->
 
 -spec notify(binary(), binary(), [push_session()], message()) -> ok.
 notify(LUser, LServer, Clients, #message{to = #jid{luser = ToUser, lserver = ToServer}, from = #jid{luser = FromUser, lserver = FromServer}, body = [#text{data = BodyData}]} = Pkt) ->
+    ?INFO_MSG("BodyData = ~p", [BodyData]),
     case binary:match(BodyData, [<<"chat_marker_deliverd_prefix">>, <<"chat_marker_read_prefix">>, <<"chat_signal_prefix">>]) of
         nomatch ->
             lists:foreach(
